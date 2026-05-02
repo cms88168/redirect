@@ -12,14 +12,39 @@
 - **绑定指定 IP**：支持绑定特定 IP 地址（IPv4/IPv6）
 - **TCP 优化**：支持 KeepAlive 和 TCP_NODELAY
 - **协议区分**：TCP 和 UDP 可分别指定不同的目标地址
+- **配置文件支持**：无参数运行时自动读取 `config.yaml`
+- **Windows 托盘运行**：无参数运行时在 Windows 下最小化到右下角系统托盘，而不是任务栏
 
 ## 使用方法
 
-### 基本用法
+### 方式一：双击运行（推荐 Windows 用户）
+
+在 `redirect.exe` 同目录下放置一个 `config.yaml` 文件，然后直接双击 `redirect.exe`：
+
+- 程序会自动隐藏控制台窗口，在系统托盘（屏幕右下角）显示图标
+- 右键点击托盘图标可选择“退出”
+- 日志会写入 exe 同目录下的 `redirect.log`
+
+`config.yaml` 示例（可参考仓库中的 `config.yaml.example`）：
+
+```yaml
+listen: tcp://:8889,udp://:8889
+proxy: 127.0.0.1:1080
+remote: target.com:443
+keepalive: false
+ttl: 30
+nodelay: false
+```
+
+支持的键与命令行参数一一对应：`listen`(`-l`)、`proxy`(`-s`)、`remote`(`-r`)、`keepalive`、`ttl`、`nodelay`。
+
+### 方式二：命令行参数运行
 
 ```powershell
 redirect.exe -l <监听地址> -s <SOCKS5代理> -r <目标地址>
 ```
+
+使用任意命令行参数时，程序按普通控制台模式运行，不会进入托盘。
 
 ### 参数说明
 
@@ -118,3 +143,6 @@ go build -o redirect main.go
 1. TCP 和 UDP 使用不同的协议栈，可以同时绑定相同的 IP 和端口
 2. UDP 转发依赖 SOCKS5 代理的 UDP ASSOCIATE 支持
 3. 目标地址支持 IPv4、IPv6 和域名
+4. 无参数启动（双击运行）时，`config.yaml` 必须与 `redirect.exe` 位于同一目录
+5. 托盘模式下日志输出到 exe 同目录下的 `redirect.log`，可在该文件中排查问题
+6. 系统托盘功能仅在 Windows 下生效，Linux/macOS 下无参数模式会以前台方式运行

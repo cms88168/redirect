@@ -12,14 +12,39 @@ A SOCKS5 proxy port forwarding tool supporting both TCP and UDP.
 - **Bind Specific IP**: Support binding to specific IP addresses (IPv4/IPv6)
 - **TCP Optimization**: Support KeepAlive and TCP_NODELAY
 - **Protocol Differentiation**: TCP and UDP can specify different target addresses
+- **Config File Support**: Automatically loads `config.yaml` when run without arguments
+- **Windows System Tray**: When run without arguments on Windows, minimizes to the system tray (bottom-right) instead of the taskbar
 
 ## Usage
 
-### Basic Usage
+### Option 1: Run by Double-Click (Recommended on Windows)
+
+Place a `config.yaml` file next to `redirect.exe`, then double-click `redirect.exe`:
+
+- The console window is hidden automatically and an icon appears in the system tray
+- Right-click the tray icon to exit
+- Logs are written to `redirect.log` alongside the executable
+
+Example `config.yaml` (see `config.yaml.example` in this repo):
+
+```yaml
+listen: tcp://:8889,udp://:8889
+proxy: 127.0.0.1:1080
+remote: target.com:443
+keepalive: false
+ttl: 30
+nodelay: false
+```
+
+Supported keys match the command-line flags: `listen` (`-l`), `proxy` (`-s`), `remote` (`-r`), `keepalive`, `ttl`, `nodelay`.
+
+### Option 2: Run via Command-Line Arguments
 
 ```powershell
 redirect.exe -l <listen_address> -s <SOCKS5_proxy> -r <target_address>
 ```
+
+When any CLI argument is provided, the program runs in normal console mode and does not enter tray mode.
 
 ### Parameters
 
@@ -118,3 +143,6 @@ go build -o redirect main.go
 1. TCP and UDP use different protocol stacks, so they can bind to the same IP and port simultaneously
 2. UDP forwarding depends on SOCKS5 proxy's UDP ASSOCIATE support
 3. Target addresses support IPv4, IPv6, and domain names
+4. When launched without arguments (double-click), `config.yaml` must be in the same directory as `redirect.exe`
+5. In tray mode, logs are written to `redirect.log` next to the executable for troubleshooting
+6. System tray support is Windows-only; on Linux/macOS, the no-argument mode runs in the foreground

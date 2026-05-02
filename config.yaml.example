@@ -1,0 +1,24 @@
+# SOCKS5端口转发工具配置文件
+# 双击 redirect.exe（无参数运行）时，会自动读取本文件并在 Windows 系统托盘中运行。
+
+# 本地监听地址：tcp://[ip:]port 或 udp://[ip:]port，多个用逗号分隔
+# 示例：
+#   listen: tcp://:8889
+#   listen: tcp://127.0.0.1:8889
+#   listen: tcp://:8889,udp://:8889
+listen: tcp://:8889,udp://:8889
+
+# SOCKS5 代理地址：host:port 或 socks5://host:port
+proxy: 127.0.0.1:1080
+
+# 目标服务器地址：host:port 或 tcp://host:port,udp://host:port
+remote: target.com:443
+
+# TCP KeepAlive 开关（可选，默认 false）
+keepalive: false
+
+# TCP KeepAlive 间隔，单位秒（可选，默认 30）
+ttl: 30
+
+# TCP_NODELAY 开关（可选，默认 false）
+nodelay: false

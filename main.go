@@ -118,6 +118,12 @@ func normalizeProxyAddr(proxy string) string {
 }
 
 func main() {
+	// 无参数时：从 config.yaml 加载配置，并在 Windows 下最小化到系统托盘
+	if len(os.Args) <= 1 {
+		runNoArgsMode()
+		return
+	}
+
 	config, err := parseFlags()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "参数错误: %v\n", err)
@@ -125,6 +131,28 @@ func main() {
 		os.Exit(1)
 	}
 
+	runForwarders(config)
+}
+
+// runNoArgsMode 无命令行参数时的启动流程：读取 config.yaml + 托盘模式
+func runNoArgsMode() {
+	configPath := defaultConfigPath()
+	yc, err := loadYAMLConfig(configPath)
+	if err != nil {
+		showFatal(fmt.Sprintf("无法加载配置文件:\n%s\n\n错误: %v\n\n请在可执行文件同目录创建 config.yaml，或使用命令行参数运行。", configPath, err))
+		os.Exit(1)
+	}
+	config, err := yc.ToConfig()
+	if err != nil {
+		showFatal(fmt.Sprintf("配置文件错误: %v", err))
+		os.Exit(1)
+	}
+	// Windows 下进入系统托盘，非 Windows 平台退化为前台运行
+	runWithTrayIcon(config)
+}
+
+// runForwarders 以阻塞方式启动所有已启用的转发器
+func runForwarders(config *Config) {
 	log.Printf("配置: TCP监听=%s, UDP监听=%s, 代理=%s, TCP目标=%s, UDP目标=%s, TCP=%v, UDP=%v, KeepAlive=%v, TTL=%v, NoDelay=%v",
 		config.TCPListenAddr, config.UDPListenAddr, config.ProxyAddr, config.TCPRemoteAddr, config.UDPRemoteAddr, config.EnableTCP, config.EnableUDP, config.KeepAlive, config.KeepAliveSec, config.NoDelay)
 
