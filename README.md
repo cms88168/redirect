@@ -131,12 +131,17 @@ redirect.exe -l tcp://:8889 -s 127.0.0.1:1080 -r target.com:443 -keepalive -ttl=
 ## Build
 
 ```powershell
-# Windows
-go build -o redirect.exe main.go
+# Windows (recommended: GUI subsystem, no console/terminal window on double-click)
+go build -ldflags "-H=windowsgui -s -w" -o redirect.exe .
+
+# Windows (debug: keep console subsystem)
+go build -o redirect.exe .
 
 # Linux/Mac
-go build -o redirect main.go
+go build -o redirect .
 ```
+
+> ⚠️ On systems with Windows Terminal installed, you MUST build with `-H=windowsgui`; otherwise Windows Terminal's host window cannot be hidden and will remain in the taskbar.
 
 ## Notes
 

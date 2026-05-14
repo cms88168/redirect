@@ -131,12 +131,17 @@ redirect.exe -l tcp://:8889 -s 127.0.0.1:1080 -r target.com:443 -keepalive -ttl=
 ## 编译
 
 ```powershell
-# Windows
-go build -o redirect.exe main.go
+# Windows（推荐：GUI 子系统，双击运行时不产生任何控制台/终端窗口）
+go build -ldflags "-H=windowsgui -s -w" -o redirect.exe .
+
+# Windows（调试用：保留控制台子系统）
+go build -o redirect.exe .
 
 # Linux/Mac
-go build -o redirect main.go
+go build -o redirect .
 ```
+
+> ⚠️ 在已安装 Windows Terminal 的系统上，必须使用 `-H=windowsgui` 构建，否则 Windows Terminal 的宿主窗口无法被隐藏，会残留在任务栏。
 
 ## 注意事项
 

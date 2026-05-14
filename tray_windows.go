@@ -19,6 +19,8 @@ var (
 
 	procGetModuleHandleW    = modKernel32.NewProc("GetModuleHandleW")
 	procGetConsoleWindow    = modKernel32.NewProc("GetConsoleWindow")
+	procAttachConsole       = modKernel32.NewProc("AttachConsole")
+	procSetStdHandle        = modKernel32.NewProc("SetStdHandle")
 	procRegisterClassExW    = modUser32.NewProc("RegisterClassExW")
 	procCreateWindowExW     = modUser32.NewProc("CreateWindowExW")
 	procDefWindowProcW      = modUser32.NewProc("DefWindowProcW")
@@ -197,6 +199,34 @@ func hideConsole() {
 	hwnd, _, _ := procGetConsoleWindow.Call()
 	if hwnd != 0 {
 		procShowWindow.Call(hwnd, swHide)
+	}
+}
+
+// AttachParentConsole 将当前 GUI 程序附加到父进程的控制台，
+// 并把标准输出/错误重定向到该控制台，使 CLI 模式下日志能显示在终端。
+func AttachParentConsole() {
+	const attachParent = ^uintptr(0) // ATTACH_PARENT_PROCESS = (DWORD)-1
+	r, _, _ := procAttachConsole.Call(attachParent)
+	if r == 0 {
+		return
+	}
+
+	const (
+		stdOutputHandle = ^uintptr(0) - 10 // -11
+		stdErrorHandle  = ^uintptr(0) - 11 // -12
+		stdInputHandle  = ^uintptr(0) - 9  // -10
+	)
+
+	if out, err := os.OpenFile("CONOUT$", os.O_RDWR, 0); err == nil {
+		os.Stdout = out
+		os.Stderr = out
+		procSetStdHandle.Call(stdOutputHandle, out.Fd())
+		procSetStdHandle.Call(stdErrorHandle, out.Fd())
+		log.SetOutput(out)
+	}
+	if in, err := os.OpenFile("CONIN$", os.O_RDWR, 0); err == nil {
+		os.Stdin = in
+		procSetStdHandle.Call(stdInputHandle, in.Fd())
 	}
 }
 

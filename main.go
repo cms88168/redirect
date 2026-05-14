@@ -124,6 +124,9 @@ func main() {
 		return
 	}
 
+	// CLI 模式：GUI 子系统构建的程序附加到父终端，以让日志可见
+	AttachParentConsole()
+
 	config, err := parseFlags()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "参数错误: %v\n", err)
